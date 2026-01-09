@@ -1,0 +1,214 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a4781fe7-8d1d-40e3-b0d6-779e9498ea1b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "79ee2eee-4268-4327-9876-02202d254f97",
+              "name": "profession",
+              "value": "supermarket",
+              "type": "string"
+            },
+            {
+              "id": "035800a0-6d62-4307-8e5a-ccb37b9cec6a",
+              "name": "location",
+              "value": "Germany",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "66225bf7-ce54-44c2-bad8-b5b65d1020aa",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "https://api.geoapify.com/v2/places?categories=commercial.supermarket&filter=rect%3A10.716463143326969%2C48.755151258420966%2C10.835314015356737%2C48.680903341613316&limit=20&apiKey=92154a74bfbf461e9317ab8d57e95404",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "categories",
+              "value": "commercial.supermarket"
+            },
+            {
+              "name": "apikey",
+              "value": "92154a74bfbf461e9317ab8d57e95404"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "14362a0a-2251-42fc-96e0-751fe9177963",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items[0].json.features.map(feature => {\n  return { json: feature };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        0
+      ],
+      "id": "685650b5-ac95-4615-a83b-dc983e5d3bc5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "batchSize": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        832,
+        0
+      ],
+      "id": "8cd77d12-22df-4985-9943-c1269936ded2",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"Business Name\": \"={{$json.properties.name}}\",\n  \"Street\": \"={{$json.properties.street}}\",\n  \"City\": \"={{$json.properties.city}}\",\n  \"State\": \"={{$json.properties.state}}\",\n  \"Country\": \"={{$json.properties.country}}\",\n  \"Latitude\": \"={{$json.geometry.coordinates[1]}}\",\n  \"Longitude\": \"={{$json.geometry.coordinates[0]}}\",\n  \"Phone\": \"={{$json.properties.phone || ''}}\",\n  \"Email\": \"={{$json.properties.email || ''}}\",\n  \"Website\": \"={{$json.properties.website || ''}}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1104,
+        -16
+      ],
+      "id": "c334d9b9-aef2-4a72-9f96-9673b6f73b04",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1312,
+        -16
+      ],
+      "id": "ce82173c-5004-4f61-915a-c15b344577de",
+      "name": "Convert to File"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "7e22fbba-1ffc-4441-b458-df63060def20",
+  "meta": {
+    "instanceId": "8e809b7f31258746d06eb487ccab5074136d00ce4fa4ea00bb6af683483b9ef1"
+  },
+  "id": "rho-8gvyqms7JI3ivYAkA",
+  "tags": []
+}
